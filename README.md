@@ -4,17 +4,18 @@ course material for LV581092
 I assume the following
 
 You finished the following DataCamp courses before the start of the BIPM program:
-• Intro to Python for Data Science
+
+* Intro to Python for Data Science
 https://www.datacamp.com/courses/intro-to-python-for-data-science
-• Intermediate Python for Data Science
+* Intermediate Python for Data Science
 https://www.datacamp.com/courses/intermediate-python-for-data-science
-• Python Data Science Toolbox (Part 1)
+* Python Data Science Toolbox (Part 1)
 https://www.datacamp.com/courses/python-data-science-toolbox-part-1
-• Python Data Science Toolbox (Part 2)
+* Python Data Science Toolbox (Part 2)
 https://www.datacamp.com/courses/python-data-science-toolbox-part-2
-• Statistical Thinking in Python (Part 1)
+* Statistical Thinking in Python (Part 1)
 https://www.datacamp.com/courses/statistical-thinking-in-python-part-1
-• Statistical Thinking in Python (Part 2) https://www.datacamp.com/courses/statistical-thinking-in-python-part-2
+* Statistical Thinking in Python (Part 2) https://www.datacamp.com/courses/statistical-thinking-in-python-part-2
 
 
 Your only excuse to skip courses is if you think you already know the content.
