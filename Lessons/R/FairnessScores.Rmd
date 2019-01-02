@@ -1,0 +1,104 @@
+---
+title: "Fairness Scores"
+output: 
+  html_document:
+    fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+Summarizing 
+
+https://www.washingtonpost.com/news/monkey-cage/wp/2016/10/17/can-an-algorithm-be-racist-our-analysis-is-more-cautious-than-propublicas/
+
+This past summer, a heated debate broke out about a tool used in courts across the country to help make bail and sentencing decisions. It’s a controversy that touches on some of the big criminal justice questions facing our society. And it all turns on an algorithm.
+
+The algorithm, called COMPAS, is used nationwide to decide whether defendants awaiting trial are too dangerous to be released on bail. In May, the investigative news organization ProPublica claimed that COMPAS is biased against black defendants. Northpointe, the Michigan-based company that created the tool, released its own report questioning ProPublica’s analysis. ProPublica rebutted the rebuttal, academic researchers entered the fray, this newspaper’s Wonkblog weighed in, and even the Wisconsin Supreme Court cited the controversy in its recent ruling that upheld the use of COMPAS in sentencing.
+
+
+### You can’t be fair in both ways at the same time
+
+Here’s the problem: it’s actually impossible for a risk score to satisfy both fairness criteria at the same time.
+
+The figure below shows the number of black and white defendants in each of two aggregate risk categories — “low” and “medium or high” — along with the number of defendants within each category who went on to commit another crime.
+
+```{r, fig.cap="Distribution of defendants across risk categories by race. Black defendants reoffended at a higher rate than whites, and accordingly, a higher proportion of black defendants are deemed medium or high risk. As a result, blacks who do not reoffend are also more likely to be classified higher risk than whites who do not reoffend."}
+
+knitr::include_graphics("COMPASFig2.PNG")
+```
+
+```{r,eval=FALSE}
+#following ProPublica:
+#https://github.com/propublica/compas-analysis/blob/master/Compas%20Analysis.ipynb
+
+compas.scores <- read.csv("H:/DropboxHWR/Blog/data/compas-scores-two-years.csv")
+library(dplyr)
+df <- dplyr::select(compas.scores, age, c_charge_degree, race, age_cat, score_text, sex, priors_count, 
+                    days_b_screening_arrest, decile_score, is_recid, two_year_recid, c_jail_in, c_jail_out) %>% 
+        filter(days_b_screening_arrest <= 30) %>%
+        filter(days_b_screening_arrest >= -30) %>%
+        filter(is_recid != -1) %>%
+        filter(c_charge_degree != "O") %>%
+        filter(score_text != 'N/A')
+nrow(df)
+
+df = subset(df, race %in% c("African-American", "Caucasian"))
+df$race = factor(as.character(df$race))
+
+
+  #df <- expand.grid(race=c("black","white"),Reoffended =c("Yes","No"),riskScore=c("low", "medHigh"))
+#df$n=NA
+summary(df$score_text)
+table(subset(df,score_text=="Low")$decile_score)#1-4
+table(subset(df,score_text=="Medium")$decile_score)#5-7
+table(subset(df,score_text=="High")$decile_score)#8-10
+
+write.csv(df, file="compas-scores-two-years-filtered.csv")
+xt=table(df$race, df$decile_score>4, df$is_recid)
+
+xt=as.data.frame.table(xt)
+colnames(xt) = c("race", "score","Reoffended", "n")
+
+library(plyr)
+xt$race=revalue(xt$race, c("African-American"="black", "Caucasian"="white"))
+xt$score=revalue(xt$score, c("FALSE"="low", "TRUE"="high"))
+xt$Reoffended=revalue(xt$Reoffended, c("0"="no", "1"="yes"))
+xt$Reoffended = factor(xt$Reoffended,levels=c("yes","no"))
+
+save(xt,file="xt.rda")
+
+
+```
+
+```{r, fig.height=3}
+load("xt.rda")
+
+require(ggplot2)
+  
+p = ggplot(data = xt, aes(x = score, fill= Reoffended, order = Reoffended,y = n))
+p = p + geom_bar(stat='identity')
+p = p + facet_grid(~race)
+p
+
+```
+
+
+```{r,eval=FALSE}
+Fig2WP = function(
+  mhR  = c(black=0.58, white=0.33)#medium or high risk (58 percent vs. 33 percent)
+  r  = c(black=0.52, white=0.39),#recidivism (52 percent vs. 39 percent))
+  rWC = c(low=0.3,medHigh=0.65)#withinCategoryrecidivism
+  n=5278 #number of cases
+){#Fig2 in Washington Post article
+  require(ggplot2)
+  
+ # df$n = 
+p = ggplot(data = df, aes(x = reorder(name, val), y = n))
+p = p + geom_bar(stat='identity')
+p = p + facet_grid(~period)
+p
+}
+```
+
